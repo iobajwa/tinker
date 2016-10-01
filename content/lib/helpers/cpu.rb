@@ -14,7 +14,7 @@ class CPU
 		@name                = name
 		@instruction_size    = instruction_size
 		@padding_instruction = padding_instruction
-		@memories            = MemoryManager.new memories
+		@memories            = memories == {} ? MemoryManager.new : MemoryManager.parse( memories )
 	end
 
 	# can parse from following data-structures
@@ -40,6 +40,7 @@ class CPU
 		
 		raise ToolException.new "CPU.parse: instruction_size for '#{name}' cpu not defined" if instruction_size == nil || instruction_size.class != Fixnum
 		raise ToolException.new "CPU.parse: memories for '#{name}' cpu defined in incorrect format" if memories.class != Hash
+		raise ToolException.new "CPU.parse: '#{name}' cpu has no memories defined" if memories.length == 0
 
 		return CPU.new name, instruction_size, padding_instruction, memories
 	end

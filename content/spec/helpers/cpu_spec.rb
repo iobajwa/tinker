@@ -58,13 +58,19 @@ describe CPU do
 				
 				expect { CPU.parse dummy_raw }.to raise_exception(ToolException, "CPU.parse: memories for 'n' cpu defined in incorrect format")
 			end
+
+			it "raw metadata contains no information about memories" do
+				dummy_raw = { :name => 'n', :instruction_size => 1, :padding_instruction => 'i' }
+				
+				expect { CPU.parse dummy_raw }.to raise_exception(ToolException, "CPU.parse: 'n' cpu has no memories defined")
+			end
 		end
 
 		describe "parses correct cpu structure when" do
 			it "it is passed a valid cpu name as string" do
 				expect(CPU).to receive(:parse_names).with('name').and_return('a')
-				expect(CPU).to receive(:find_cpu_metadata).with('a').and_return( { :name => 'n', :instruction_size => 1, })
-				expect(MemoryManager).to receive(:new).with({}).and_return([])
+				expect(CPU).to receive(:find_cpu_metadata).with('a').and_return( { :name => 'n', :instruction_size => 1, :memories => { 1 => 2 } })
+				expect(MemoryManager).to receive(:parse).with( { 1 => 2 } ).and_return([])
 
 				parsed_cpu = CPU.parse 'name'
 
@@ -75,7 +81,7 @@ describe CPU do
 			
 			it "it is passed a valid cpu alias" do
 				dummy_raw = { :name => 'n', :instruction_size => 1, :padding_instruction => 'i', :memories => {'memories' => nil}}
-				expect(MemoryManager).to receive(:new).with({'memories' => nil}).and_return('a')
+				expect(MemoryManager).to receive(:parse).with({'memories' => nil}).and_return('a')
 
 				parsed_cpu = CPU.parse dummy_raw
 
