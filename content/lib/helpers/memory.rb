@@ -47,6 +47,32 @@ class Memory
 		return address_to_index(address) > -1
 	end
 
+
+=begin
+	format:
+	:<name>:
+		:start_address:
+		:size:
+=end
+	def Memory.parse(raw)
+		raise ToolException.new "Memory.parse: only Hash datatype is supported" if raw == nil || raw.class != Hash
+		raise ToolException.new "Memory.parse: nothing to parse" if raw.length == 0
+
+		name = raw.keys[0]
+		meta = raw [ name ]
+		name = name.to_s
+		size          = meta[:size]
+		start_address = meta[:start_address]
+
+		raise ToolException.new "Memory.parse: size not defined for '#{name}'" unless size
+		raise ToolException.new "Memory.parse: size can only be a number ('#{name}')" unless size.class == Fixnum
+		raise ToolException.new "Memory.parse: start_address not defined for '#{name}'" unless start_address
+		raise ToolException.new "Memory.parse: start_address can only be a number ('#{name}')" unless start_address.class == Fixnum
+
+		return Memory.new name, meta[:start_address], meta[:size]
+	end
+
+
 	private 
 	def address_to_index(address)
 		address -= @start_address

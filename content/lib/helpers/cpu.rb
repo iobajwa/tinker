@@ -7,7 +7,7 @@
 class CPU
 	attr_accessor :name,
 	              :instruction_size,     # in bits
-	              :padding_instruction,  # for cpus in which data is not directly encoded onto flash
+	              :padding_instruction,  # for cpus which packs it data in flash using an instruction such as 'movlw'
 	              :memories
 
 	def initialize(name, instruction_size, padding_instruction=nil, memories={})

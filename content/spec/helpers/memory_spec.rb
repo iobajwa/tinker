@@ -139,4 +139,49 @@ describe Memory do
 		end
 	end
 
+	describe "when parsing memory object from metadata" do
+		describe "should raise exception when" do
+			it "passed metadata is of class other than Hash" do
+				expect{ Memory.parse 'd' }.to raise_exception(ToolException, "Memory.parse: only Hash datatype is supported")
+			end
+
+			it "empty hash is passed" do
+				expect{ Memory.parse({}) }.to raise_exception(ToolException, "Memory.parse: nothing to parse")
+			end
+
+			it "size is missing" do
+				dummy_config = { :memory => { :start_address => 0x100 } }
+
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: size not defined for 'memory'")
+			end
+
+			it "size is not a number" do
+				dummy_config = { :m => { :size => 'a', :start_address => 0x100 } }
+
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: size can only be a number ('m')")
+			end
+
+			it "starting address is missing" do
+				dummy_config = { :m => { :size => 32, } }
+
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: start_address not defined for 'm'")
+			end
+
+			it "starting address is not a number" do
+				dummy_config = { :m => { :size => 32, :start_address => 'add'} }
+
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: start_address can only be a number ('m')")
+			end
+		end
+
+		it "should parse and return a valid memory object when" do
+			dummy_config = { :memory => { :size => 32, :start_address => 0x100 } }
+
+			memory = Memory.parse dummy_config
+
+			memory.name.should be == "memory"
+			memory.size.should be == 32
+			memory.start_address.should be == 0x100
+		end
+	end
 end
