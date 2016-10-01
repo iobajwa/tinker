@@ -5,9 +5,6 @@ require "helpers/memory_manager"
 require "helpers/tool_messages"
 
 describe CPU do
-	before(:each) do
-	end
-
 	describe "when parsing the cpu structure from raw data" do
 		describe "and parsing name from passed string" do
 			it "raises exception when passed raw string contains no name" do
