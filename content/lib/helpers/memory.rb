@@ -66,8 +66,10 @@ class Memory
 
 		raise ToolException.new "Memory.parse: size not defined for '#{name}'" unless size
 		raise ToolException.new "Memory.parse: size can only be a number ('#{name}')" unless size.class == Fixnum
+		raise ToolException.new "Memory.parse: size can not be less than 1 ('#{name}')" if size < 1
 		raise ToolException.new "Memory.parse: start_address not defined for '#{name}'" unless start_address
 		raise ToolException.new "Memory.parse: start_address can only be a number ('#{name}')" unless start_address.class == Fixnum
+		raise ToolException.new "Memory.parse: start_address can not be less than 0 ('#{name}')" if start_address < 1
 
 		return Memory.new name, meta[:start_address], meta[:size]
 	end

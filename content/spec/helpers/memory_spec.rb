@@ -161,6 +161,14 @@ describe Memory do
 				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: size can only be a number ('m')")
 			end
 
+			it "size is less than 1" do
+				dummy_config = { :m => { :size => 0, :start_address => 0x100 } }
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: size can not be less than 1 ('m')")
+
+				dummy_config = { :m => { :size => -1, :start_address => 0x100 } }
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: size can not be less than 1 ('m')")
+			end
+
 			it "starting address is missing" do
 				dummy_config = { :m => { :size => 32, } }
 
@@ -171,6 +179,12 @@ describe Memory do
 				dummy_config = { :m => { :size => 32, :start_address => 'add'} }
 
 				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: start_address can only be a number ('m')")
+			end
+
+			it "starting address is less than 0" do
+				dummy_config = { :m => { :size => 32, :start_address => -23} }
+
+				expect{ Memory.parse dummy_config }.to raise_exception(ToolException, "Memory.parse: start_address can not be less than 0 ('m')")
 			end
 		end
 
