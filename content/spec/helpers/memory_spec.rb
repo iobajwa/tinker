@@ -10,19 +10,13 @@ describe Memory do
 
 	describe "when checking if an address is within the memory bounds" do
 		it "returns true when it lies within the range" do
-			within_bounds = $memory.is_address_within_bounds 19
-			within_bounds.should be == true
-
-			within_bounds = $memory.is_address_within_bounds 2
-			within_bounds.should be == true
+			within_bounds = $memory.is_address_within_bounds(19).should be == true
+			within_bounds = $memory.is_address_within_bounds(2).should be == true
 		end
 
 		it "returns false otherwise" do
-			within_bounds = $memory.is_address_within_bounds 1
-			within_bounds.should be == false
-
-			within_bounds = $memory.is_address_within_bounds 20
-			within_bounds.should be == false
+			$memory.is_address_within_bounds(1).should be == false
+			$memory.is_address_within_bounds(22).should be == false
 		end
 	end
 
