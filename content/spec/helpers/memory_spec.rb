@@ -10,13 +10,13 @@ describe Memory do
 
 	describe "when checking if an address is within the memory bounds" do
 		it "returns true when it lies within the range" do
-			within_bounds = $memory.is_address_within_bounds(19).should be == true
-			within_bounds = $memory.is_address_within_bounds(2).should be == true
+			within_bounds = $memory.address_exists?(19).should be == true
+			within_bounds = $memory.address_exists?(2).should be == true
 		end
 
 		it "returns false otherwise" do
-			$memory.is_address_within_bounds(1).should be == false
-			$memory.is_address_within_bounds(22).should be == false
+			$memory.address_exists?(1).should be == false
+			$memory.address_exists?(22).should be == false
 		end
 	end
 
@@ -83,18 +83,18 @@ describe Memory do
 				$memory.size = 5
 
 				expect($memory).to receive(:is_writeable).and_return(true)
-				expect($memory).to receive(:is_address_within_bounds).and_return(false)
+				expect($memory).to receive(:address_exists?).and_return(false)
 				expect{ $memory.write_byte 23, 9 }.to raise_exception(ToolException, "address '9' for 'm' is beyond range")
 
 				expect($memory).to receive(:is_writeable).and_return(true)
-				expect($memory).to receive(:is_address_within_bounds).and_return(false)
+				expect($memory).to receive(:address_exists?).and_return(false)
 				expect{ $memory.write_byte 23, 15 }.to raise_exception(ToolException, "address '15' for 'm' is beyond range")
 			end
 		end
 
 		it "writes a single byte to the designated address" do
 			expect($memory).to receive(:is_writeable).and_return(true)
-			expect($memory).to receive(:is_address_within_bounds).and_return(true)
+			expect($memory).to receive(:address_exists?).and_return(true)
 
 			$memory.write_byte 0x1234, 4
 
@@ -114,11 +114,11 @@ describe Memory do
 				$memory.size = 5
 
 				expect($memory).to receive(:is_readable).and_return(true)
-				expect($memory).to receive(:is_address_within_bounds).and_return(false)
+				expect($memory).to receive(:address_exists?).and_return(false)
 				expect{ $memory.read_byte 9 }.to raise_exception(ToolException, "address '9' for 'm' is beyond range")
 
 				expect($memory).to receive(:is_readable).and_return(true)
-				expect($memory).to receive(:is_address_within_bounds).and_return(false)
+				expect($memory).to receive(:address_exists?).and_return(false)
 				expect{ $memory.read_byte 15 }.to raise_exception(ToolException, "address '15' for 'm' is beyond range")
 			end
 		end

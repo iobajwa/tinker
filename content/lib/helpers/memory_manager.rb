@@ -15,7 +15,7 @@ class MemoryManager
 	end
 
 	def add_memory(memory)
-		@memories.push memory if memory != nil && memory.has_valid_permissions
+		@memories.push memory if memory&.has_valid_permissions
 	end
 
 	def write_byte(byte, address, to_memory=nil)
@@ -25,7 +25,7 @@ class MemoryManager
 		if to_memory == nil
 			write_success = false
 			@memories.each {  |m|
-				next unless m.is_address_within_bounds address
+				next unless m.address_exists? address
 				m.write_byte byte, address
 				write_success = true
 				break
@@ -41,7 +41,7 @@ class MemoryManager
 	def read_byte(address, from_memory=nil)
 		if from_memory == nil
 			@memories.each {  |m|
-				next unless m.is_address_within_bounds address
+				next unless m.address_exists? address
 				return m.read_byte address
 			}
 			raise ToolException.new "MemoryManager.read_byte: address '#{address}' does not exist"
@@ -58,16 +58,38 @@ class MemoryManager
 	end
 
 	def address_exists?(address)
+		@memories.each { |m| return true if m.address_exists? address }
+		return false
 	end
 
 	def MemoryManager.parse(raw)
-		raise ToolException.new "MemoryManager.parse: raw metadata must be a Hash" if raw == nil || raw.class != Hash
+		raise ToolException.new "MemoryManager.parse: raw metadata must be a Hash" if raw&.class != Hash
 
-		memories = []
+		unsorted_memories = []
 		raw.each_pair {  |k,v|
-			memories.push Memory.parse( { k =>v } )
+			unsorted_memories.push Memory.parse( { k => v } )
 		}
 
-		return MemoryManager.new memories
+		sorted_memories = MemoryManager.sort_memories unsorted_memories
+		MemoryManager.check_if_memories_overlap sorted_memories
+
+		return MemoryManager.new sorted_memories
+	end
+
+	def MemoryManager.sort_memories(raw)
+		result = {}
+		raw.each {  |m| result[m.start_address] = m  }
+		return result.sort.to_h.values
+	end
+
+	def MemoryManager.check_if_memories_overlap(memories)
+		memories.each {  |m|
+			memories.each {  |c|
+				next if m.name == c.name
+				if m.address_exists?( c.start_address )
+					raise ToolException.new "MemoryManager: memories overlap: '#{m.name}' (#{m.start_address}, #{m.size}) and '#{c.name}' (#{c.start_address}, #{c.size})"
+				end
+			}
+		}
 	end
 end

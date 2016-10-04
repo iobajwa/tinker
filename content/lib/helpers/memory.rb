@@ -30,20 +30,20 @@ class Memory
 
 	def write_byte(byte, address)
 		raise ToolException.new "'#{@name}' is not writeable (permissions: '#{permissions}')" unless is_writeable
-		raise ToolException.new "address '#{address}' for '#{@name}' is beyond range" unless is_address_within_bounds address
+		raise ToolException.new "address '#{address}' for '#{@name}' is beyond range" unless address_exists? address
 		index = address_to_index address
 		@contents[index] = byte & 0xff
 	end
 
 	def read_byte(address)
 		raise ToolException.new "'#{@name}' is not readable (permissions: '#{permissions}')" unless is_readable
-		raise ToolException.new "address '#{address}' for '#{@name}' is beyond range" unless is_address_within_bounds address
+		raise ToolException.new "address '#{address}' for '#{@name}' is beyond range" unless address_exists? address
 
 		index = address_to_index address
 		return @contents[index]
 	end
 
-	def is_address_within_bounds(address)
+	def address_exists?(address)
 		return address_to_index(address) > -1
 	end
 
