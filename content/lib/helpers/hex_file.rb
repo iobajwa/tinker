@@ -17,7 +17,8 @@ class HexFile
 		base_address = 0
 		record_counter = 0
 		contents.each {  |line|
-			
+
+			line.strip!
 			record_counter += 1
 			raise ToolException.new "HexFile: damaged record # #{record_counter}, does not begin with ':" unless line.start_with? ':'
 			
@@ -28,7 +29,7 @@ class HexFile
 				
 				record_data_length  = parse_byte line, 1
 				record_offset       = (parse_byte line, 3) << 8
-				record_offset       = parse_byte line, 5
+				record_offset      |= parse_byte line, 5
 				record_type         = parse_byte line, 7
 				record_data_payload = HexFile.parse_bytes line[ 9 .. line.length - 3 ]
 				raise ToolException.new "encoded data-length and parsed-data-block length does not match" if record_data_payload.length != record_data_length

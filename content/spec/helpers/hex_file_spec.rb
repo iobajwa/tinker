@@ -35,9 +35,9 @@ describe HexFile do
 			end
 
 			it "parses the record and adjusts the addresses of future data records accordingly" do
-				dummy_record = [":10000000803120007F08F30011080139F20021003F",
-								":020000040001F9",
-								":10000000803120007F08F30011080139F20021003F",
+				dummy_record = [":10000000803120007F08F30011080139F20021003F   ",
+								":020000040001F9\n",
+								":01010000AA54  \n",
 							   ]
 				parsed_data1 = []
 				parsed_data2 = []
@@ -45,12 +45,12 @@ describe HexFile do
 					if address < 0xFFFF
 						parsed_data1[address] = byte
 					else
-						parsed_data2[address - 65536] = byte
+						parsed_data2[address - 65792] = byte
 					end
 				}
 
 				parsed_data1.should be == [0x80, 0x31, 0x20, 0x00, 0x7F, 0x08, 0xF3, 0x00, 0x11, 0x08, 0x01, 0x39, 0xF2, 0x00, 0x21, 0x00]
-				parsed_data2.should be == [0x80, 0x31, 0x20, 0x00, 0x7F, 0x08, 0xF3, 0x00, 0x11, 0x08, 0x01, 0x39, 0xF2, 0x00, 0x21, 0x00]
+				parsed_data2.should be == [0xAA]
 			end
 		end
 	end
