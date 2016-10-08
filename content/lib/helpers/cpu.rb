@@ -1,20 +1,27 @@
 
 [
-	"memory_manager.rb",
-	"tool_messages.rb",
+	"memory_manager",
+	"tool_messages",
+	"hex_file",
 ].each {  |req| require "#{File.expand_path(File.dirname(__FILE__))}/#{req}" }
 
 class CPU
 	attr_accessor :name,
 	              :instruction_size,     # in bits
 	              :padding_instruction,  # for cpus which packs it data in flash using an instruction such as 'movlw'
-	              :memories
+	              :memory_manager
 
 	def initialize(name, instruction_size, padding_instruction=nil, memories={})
 		@name                = name
 		@instruction_size    = instruction_size
 		@padding_instruction = padding_instruction
-		@memories            = memories == {} ? MemoryManager.new : MemoryManager.parse( memories )
+		@memory_manager      = memories == {} ? MemoryManager.new : MemoryManager.parse( memories )
+	end
+
+	def mount_hex(raw_lines)
+		HexFile.parse(raw_lines) {  |address, byte|
+			@memory_manager.write_byte address, byte
+		} if raw_lines
 	end
 
 	# can parse from following data-structures

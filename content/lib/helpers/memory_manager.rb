@@ -18,7 +18,7 @@ class MemoryManager
 		@memories.push memory if memory&.has_valid_permissions
 	end
 
-	def write_byte(byte, address, to_memory=nil)
+	def write_byte(address, byte, to_memory=nil)
 		
 		byte &= 0xff
 

@@ -76,7 +76,7 @@ describe CPU do
 
 				parsed_cpu.name.should be == "n"
 				parsed_cpu.instruction_size.should be == 1
-				parsed_cpu.memories.should be == []
+				parsed_cpu.memory_manager.should be == []
 			end
 			
 			it "it is passed a valid cpu alias" do
@@ -88,8 +88,18 @@ describe CPU do
 				parsed_cpu.name.should be == "n"
 				parsed_cpu.instruction_size.should be == 1
 				parsed_cpu.padding_instruction.should be == 'i'
-				parsed_cpu.memories.should be == 'a'
+				parsed_cpu.memory_manager.should be == 'a'
 			end
+		end
+
+		it "when mounting hex should mount" do
+			dummy_memories = {}
+			cpu = CPU.new 'cpu', 14, 0x34, dummy_memories
+			cpu.memory_manager = dummy_memories
+			expect(HexFile).to receive(:parse).with('lines').and_yield(1, 2)
+			expect(dummy_memories).to receive(:write_byte).with(1, 2)
+			
+			cpu.mount_hex 'lines'
 		end
 	end
 end

@@ -84,7 +84,7 @@ describe MemoryManager do
 				expect($dummy_memory2).to receive(:address_exists?).with('address').and_return(false)
 				expect($dummy_memory3).to receive(:address_exists?).with('address').and_return(false)
 
-				expect{ $mm.write_byte 22, 'address' }.to raise_exception(ToolException, "MemoryManager.write_byte: address 'address' does not exist")
+				expect{ $mm.write_byte 'address', 22 }.to raise_exception(ToolException, "MemoryManager.write_byte: address 'address' does not exist")
 			end
 
 			it "should delegate write operation to the found memory" do
@@ -92,7 +92,7 @@ describe MemoryManager do
 				expect($dummy_memory2).to receive(:address_exists?).with('add').and_return(true)
 				expect($dummy_memory2).to receive(:write_byte).with(0x34, 'add')
 
-				$mm.write_byte 0x1234, 'add'
+				$mm.write_byte 'add', 0x1234
 			end
 		end
 
@@ -100,14 +100,14 @@ describe MemoryManager do
 			it "should raise an exception when specified memory could not be found" do
 				expect($mm).to receive(:get_memory).with('memory').and_return(nil)
 
-				expect{ $mm.write_byte 22, 'address', 'memory' }.to raise_exception(ToolException, "MemoryManager.write_byte: No memory found named as 'memory'")
+				expect{ $mm.write_byte 'address', 22, 'memory' }.to raise_exception(ToolException, "MemoryManager.write_byte: No memory found named as 'memory'")
 			end
 
 			it "should delegate write operation to the found memory" do
 				expect($mm).to receive(:get_memory).with('m1m').and_return($dummy_memory1)
 				expect($dummy_memory1).to receive(:write_byte).with(22, 'address')
 
-				$mm.write_byte 22, 'address', 'm1m'
+				$mm.write_byte 'address', 22, 'm1m'
 			end
 		end
 	end
