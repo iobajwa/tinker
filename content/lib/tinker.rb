@@ -1,6 +1,7 @@
 
 [
 	"helpers/tool_messages.rb",
+	"helpers/variable.rb",
 	"helpers/cpu.rb",
 ].each {  |req| require "#{File.expand_path(File.dirname(__FILE__))}/#{req}" }
 require "yaml"
