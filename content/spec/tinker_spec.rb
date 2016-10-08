@@ -24,10 +24,12 @@ describe Tinker do
 
 	describe "when reading variable value using index" do
 		it "should return correct value as read from cpu" do
-			expect($tinker).to receive(:get_variable).with("v").and_return($tinker.variables[1])
+			dummy_var = $tinker.variables[1]
+			expect($tinker).to receive(:get_variable).with("v").and_return(dummy_var)
 			expect($dummy_cpu).to receive(:read_memory).with("flash", 0, 2).and_return('result')
+			expect(dummy_var).to receive(:deserialize).with("result").and_return(["result"])
 			
-			$tinker["v"].should be == 'result'
+			$tinker["v"].should be == ['result']
 		end
 		it "should raise exception with description when underlying call failed with an exception" do
 			expect($tinker).to receive(:get_variable).with("v").and_return($tinker.variables[1])
@@ -39,8 +41,10 @@ describe Tinker do
 
 	describe "when writing variable value using index" do
 		it "should delgate work to cpu with proper information" do
-			expect($tinker).to receive(:get_variable).with("v").and_return($tinker.variables[1])
-			expect($dummy_cpu).to receive(:write_memory).with("flash", 0, 2, 12)
+			dummy_var = $tinker.variables[1]
+			expect($tinker).to receive(:get_variable).with("v").and_return(dummy_var)
+			expect(dummy_var).to receive(:serialize).with(12).and_return([12])
+			expect($dummy_cpu).to receive(:write_memory).with("flash", 0, 2, [12])
 			
 			$tinker["v"] = 12
 		end

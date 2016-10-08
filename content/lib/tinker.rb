@@ -23,6 +23,7 @@ class Tinker
 	def []=(var_name, value)
 		v = get_variable var_name
 		begin
+			value = v.serialize value
 			cpu.write_memory v.memory_name, v.address, v.size, value
 		rescue ToolException => ex
 			raise ToolException.new "Tinker: error writing variable '#{v.name}': " + ex.message
@@ -32,7 +33,8 @@ class Tinker
 	def [](var_name)
 		v = get_variable var_name
 		begin
-			return cpu.read_memory v.memory_name, v.address, v.size
+			raw = cpu.read_memory v.memory_name, v.address, v.size
+			return v.deserialize raw
 		rescue ToolException => ex
 			raise ToolException.new "Tinker: error reading variable '#{v.name}': " + ex.message
 		end

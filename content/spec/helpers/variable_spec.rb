@@ -48,4 +48,91 @@ describe Variable do
 			var.should be == expected_var
 		end
 	end
+
+	describe "when serializing value to byte-stream" do
+		before(:each) do
+			$var = Variable.new "var", 2, "u16", 0, 23, "flash"
+		end
+		describe "raises exception when" do
+			describe "value is non-array and" do
+				it "value type is bool and value is neither true nor false" do
+					$var.type = "bool"
+					$var.size = 1
+					expect { $var.serialize 23 }.to raise_exception(ToolException, "variable.serialize: invalid value '23' for variable 'var' of type 'bool'")
+				end
+				it "value is of unknown-type" do
+					$var.type = "unknown"
+					expect { $var.serialize 23 }.to raise_exception(ToolException, "variable.serialize: cannot serialize variable 'var' of type 'unknown'")
+				end
+			end
+
+			describe "value is array and" do
+				before(:each) do
+					$var.is_array = true
+					$var.array_depth = 2
+				end
+				it "array_depth is less than 1" do
+					$var.array_depth = 0
+					expect { $var.serialize 2 }. to raise_exception(ToolException, "variable.serialize: cannot serialize variable 'var' because array_depth < 1")
+				end
+				it "value type is bool and value is neither true nor false" do
+					$var.type = "bool"
+					$var.size = 1
+					expect { $var.serialize 23 }.to raise_exception(ToolException, "variable.serialize: invalid value '23' at index 1 for variable 'var' of type 'bool'")
+				end
+				it "passed array length is > array_depth" do
+					expect { $var.serialize [23, 23, 23] }.to raise_exception(ToolException, "variable.serialize: cannot serialize variable 'var' because passed array value.length != array_depth")
+				end
+			end
+		end
+
+		describe "returns correct data when" do
+			describe "value is non-array and is of" do
+				it "bool type" do
+					$var.type = "bool"
+					$var.size = 1
+					$var.serialize(true).should be == [1]
+					$var.serialize(false).should be == [0]
+				end
+				it "integer type" do
+					$var.serialize(1).should be == [1, 0]
+					$var.size = 4
+					$var.serialize(0x87654321).should be == [0x21, 0x43, 0x65, 0x87]
+					$var.size = 6
+					$var.serialize(0x123487654321).should be == [0x21, 0x43, 0x65, 0x87, 0x34, 0x12]
+				end
+				it "Char type" do
+					$var.type = "Char"
+					$var.size = 1
+					$var.serialize("S").should be == [83]
+				end
+			end
+
+			describe "value is an array and is of" do
+				before(:each) do
+					$var.is_array = true
+					$var.array_depth = 4
+				end
+				it "bool type" do
+					$var.type = "bool"
+					$var.size = 4
+
+					$var.serialize(false).should be == [0, 0, 0, 0]
+					$var.serialize(true).should be == [1, 1, 1, 1]
+					$var.serialize([true, false, false, true]).should be == [1, 0, 0, 1]
+				end
+				it "integer type" do
+					$var.size = 2
+					$var.serialize(12).should be == [12, 0, 12, 0, 12, 0, 12, 0]
+					$var.serialize([0x12, 0x1234, 0x34, 0x1200]).should be == [0x12, 0, 0x34, 0x12, 0x34, 0, 0, 0x12]
+				end
+				it "Char type" do
+					$var.type = "Char"
+					$var.array_depth = 6
+					$var.serialize('s').should be == [115, 0, 0, 0, 0, 0]
+					$var.serialize('sat').should be == [115, 97, 116, 0, 0, 0]
+				end
+			end
+		end
+	end
 end
