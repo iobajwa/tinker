@@ -26,7 +26,8 @@ class SymbolManager
 		return nil unless raw.class == Hash
 		vars = []
 		raw.each_pair {  |n, v|
-			name    = n.to_s
+			name = n.to_s
+			raise ToolException.new "SymbolManager.parse: metadata missing for '#{n}' variable" unless v
 			size    = v[:size]
 			type    = v[:type]
 			address = v[:address]

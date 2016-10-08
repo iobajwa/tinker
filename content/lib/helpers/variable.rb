@@ -17,4 +17,8 @@ class Variable
 		         @address == address &&
 		         @value   == value )
 	end
+
+	def to_s
+		return "#{name} (size='#{@size}', type='#{@type}', address='#{@address}', value='#{@value}')"
+	end
 end

@@ -7,6 +7,10 @@ require "helpers/variable"
 describe SymbolManager do
 	describe "when parsing the symbols from raw data" do
 		describe "should raise exception when" do
+			it "compelte metadata is missing" do
+				dummy = { :a => nil }
+				expect { SymbolManager.parse dummy }.to raise_exception(ToolException, "SymbolManager.parse: metadata missing for 'a' variable" )
+			end
 			it "size is missing" do
 				dummy = { :a => { :type => 'u16', :address => 0, :value => 230 } }
 				expect { SymbolManager.parse dummy }.to raise_exception(ToolException, "SymbolManager.parse: size missing for 'a' variable" )
