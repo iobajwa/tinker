@@ -24,6 +24,17 @@ class CPU
 		} if raw_lines
 	end
 
+	def write_memory(memory_name, address, data, size)
+		raise "Not Implemented!"
+	end
+
+	def read_memory(memory_name, address, size)
+		raise "Not Implemented!"
+	end
+
+
+
+
 	# can parse from following data-structures
 	# 'name' :=> string, '<name> (, <aliases>)?'
 	# hash = { :name => 'name', :instruction_size => Fixnum, :padding_instruction => Fixnum/string, :memories => {..} }
@@ -64,7 +75,7 @@ class CPU
 				:instruction_size => 14,
 				:padding_instruction => 0x34,
 				:memories => {
-					"program_memory" => {
+					"flash" => {
 						:start_address => 0,
 						:size => 0xFFFF
 					},
