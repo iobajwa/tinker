@@ -101,4 +101,16 @@ describe Tinker do
 			Tinker.load_image('hex', 'meta').should be == dummy_tinker_object
 		end
 	end
+
+	it "when writing default values of variables, writes values of each variable" do
+		a = []
+		b = []
+		expect($tinker).to receive(:variables).and_return([a, b])
+		expect(a).to receive(:default_value).and_return('1')
+		expect(b).to receive(:default_value).and_return('2')
+		expect($tinker).to receive(:write_value_object).with(a, '1')
+		expect($tinker).to receive(:write_value_object).with(b, '2')
+
+		$tinker.write_default_values
+	end
 end

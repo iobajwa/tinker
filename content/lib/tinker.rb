@@ -8,11 +8,7 @@ require "yaml"
 
 
 class Tinker
-	attr_accessor :cpu,
-	              :variables,       # contains a collection of all variables
-	              :raw_hex_image,
-	              :hex_file,
-	              :meta_file
+	attr_accessor :cpu, :variables, :raw_hex_image, :hex_file, :meta_file
 
 	def initialize
 		@cpu = nil
@@ -35,8 +31,7 @@ class Tinker
 	def []=(var_name, value)
 		v = get_variable var_name
 		begin
-			value = v.serialize value
-			cpu.memories[v.memory_name].write_object value, v.address
+			write_value_object v, value
 		rescue ToolException => ex
 			raise ToolException.new "Tinker: error writing variable '#{v.name}': " + ex.message
 		end
@@ -68,8 +63,10 @@ class Tinker
 		return t
 	end
 
-	def force_default_value
-		raise "Not Implemented!"
+	def write_default_values
+		variables.each {  |v|
+			write_value_object v, v.default_value
+		}
 	end
 
 	def to_hex_file(file)
@@ -90,5 +87,10 @@ class Tinker
 	def Tinker.mount_cpu_info(raw)
 		return unless raw
 		@cpu = CPU.parse raw
+	end
+
+	def write_value_object(var, val)
+		val = var.serialize val
+		cpu.memories[var.memory_name].write_object val, var.address
 	end
 end
