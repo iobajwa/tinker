@@ -62,7 +62,36 @@ class Variable
 
 	# converts higher-level 'value' from lower-level byte_stream (byte-array) based upon it's type
 	def deserialize(raw)
-		raise "Not Implemented!"
+		read_value = nil
+		begin
+			raise ToolException.new "only deserialization from byte-array is supported" if raw.class != Array
+			if @is_array
+				expected_array_length = @size * array_depth
+				raise ToolException.new "byte-array length (#{raw.length}) and expected byte-array length (#{expected_array_length}) mismatch for variable '#{@name}'" if raw.length != expected_array_length
+				read_value = @type.downcase == 'char' ? "" : []
+				index = 0
+				each_element_size = @size
+				end_index = each_element_size - 1
+				
+				while index < raw.length
+					element = parse_value raw[index..end_index]
+					if element.class == String
+						read_value += element 
+					else
+						read_value.push element
+					end
+					index     += each_element_size
+					end_index += each_element_size
+				end
+
+				read_value.flatten! if read_value.class == Array
+			else
+				read_value = parse_value raw
+			end
+		rescue ToolException => ex
+			raise ToolException.new "variable.deserialize: " + ex.message
+		end
+		return read_value
 	end
 
 	def ==(obj)
@@ -101,6 +130,36 @@ class Variable
 
 		# we were assuming the host-computer has little endian format all along
 		return @@little_endian ? bytes : bytes.reverse
+	end
+
+	def parse_value(raw)
+		read_value = nil
+		case @type.downcase
+			when "bool"
+				read_value = parse_value_from_raw(raw, 1) == 1
+			when "char"
+				read_value = parse_value_from_raw(raw, 1).chr
+			when /(u|h|i|s|c)[1-9]{1,2}/i   # integers
+				read_value = parse_value_from_raw(raw, @size)
+			else raise ToolException.new "cannot deserialize passed byte-stream into variable '#{@name}' of type '#{@type}'; type not supported"
+		end
+		return read_value
+	end
+
+	def parse_value_from_raw(raw, size_expected)
+		raise ToolException.new "variable instance not present in memory ('#{@name}')" if raw.length == 0
+		raise ToolException.new "byte-array size ('#{raw.length}') does not match the expected size ('#{size_expected}') for variable '#{@name}'" unless raw.length == size_expected
+		raw.each {  |b| raise ToolException.new "variable instance not present in memory ('#{@name}')" if b == nil }
+		i = 0
+		value = 0
+		raw.reverse! if @@little_endian
+		size_expected.times {
+			value |= raw[i]
+			value <<= 8
+			i += 1
+		}
+		value >>= 8
+		return value
 	end
 
 

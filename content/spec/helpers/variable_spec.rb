@@ -135,4 +135,74 @@ describe Variable do
 			end
 		end
 	end
+
+	describe "when deserializing byte-stream to composite value" do
+		before(:each) do
+			$var = Variable.new "var", 2, "u16", 0, 23, "flash"
+		end
+		describe "raises exception when" do
+			describe "variable is array and" do
+				it "array depth and passed byte stream length do not match" do
+					$var.type = "bool"
+					$var.size = 1
+					$var.is_array = true
+					$var.array_depth = 4
+
+					expect { $var.deserialize [1] }.to raise_exception(ToolException, "variable.deserialize: byte-array length (1) and expected byte-array length (4) mismatch for variable 'var'")
+				end
+			end
+			it "passed data-stream is empty" do
+				expect { $var.deserialize [] }.to raise_exception(ToolException, "variable.deserialize: variable instance not present in memory ('var')")
+			end
+			it "passed data-stream contains nil elements" do
+				expect { $var.deserialize [1, nil] }.to raise_exception(ToolException, "variable.deserialize: variable instance not present in memory ('var')")
+			end
+			it "passed data-stream length does not match expected size" do
+				expect { $var.deserialize [1] }.to raise_exception(ToolException, "variable.deserialize: byte-array size ('1') does not match the expected size ('2') for variable 'var'")
+			end
+		end
+		describe "and variable is non-array, returns correctly formed data when" do
+			it "variable type is bool" do
+				$var.type = "bool"
+				$var.size = 1
+
+				$var.deserialize([0]).should be == false
+				$var.deserialize([1]).should be == true
+			end
+			it "variable type is integer" do
+				$var.size = 2
+
+				$var.deserialize([0x34, 0x12]).should be == 0x1234
+			end
+			it "variable type is Char" do
+				$var.size = 1
+				$var.type = "Char"
+
+				$var.deserialize([0x34]).should be == '4'
+			end
+		end
+		describe "and variable is array, returns correctly formed data when" do
+			before(:each) do
+				$var.is_array = true
+				$var.array_depth = 5
+			end
+			it "variable type is bool" do
+				$var.type = "bool"
+				$var.size = 1
+
+				$var.deserialize([0, 1, 0, 1, 1]).should be == [false, true, false, true, true]
+			end
+			it "variable type is integer" do
+				$var.array_depth = 2
+				
+				$var.deserialize([0x12, 0, 0, 0x12]).should be == [0x12, 0x1200]
+			end
+			it "variable type is Char" do
+				$var.type = "Char"
+				$var.size = 1
+
+				$var.deserialize([0x30, 0x31, 0x32, 0x33, 0x34]).should be == '01234'
+			end
+		end
+	end
 end
