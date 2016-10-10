@@ -163,4 +163,25 @@ describe MemoryManager do
 			$mm.address_exists?(1001).should be == true
 		end
 	end
+
+	describe "when obtaining memory object using" do
+		describe "memory.name" do
+			it "returns correct memory instance" do
+				expect($mm).to receive(:get_memory).with("blah").and_return 2
+				$mm["blah"].should be == 2
+			end
+			it "raises exception when no matching object is found" do
+				expect($mm).to receive(:get_memory).with("blah").and_return nil
+				expect { $mm["blah"] }.to raise_exception(ToolException, "MemoryManager[\"blah\"]: memory does not exists")
+			end
+		end
+		describe "index" do
+			it "returns correct memory instance" do
+				dummy_memories = []
+				$mm.memories   = dummy_memories
+				expect(dummy_memories).to receive(:[]).with(23).and_return(2)
+				$mm[23].should be == 2
+			end
+		end
+	end
 end

@@ -18,10 +18,16 @@ class MemoryManager
 		@memories.push memory if memory&.has_valid_permissions
 	end
 
-	def [](memory_name)
-		m = get_memory memory_name
-		raise ToolException.new "MemoryManager[\"#{memory_name}\"]: memory does not exists" unless m
-		return m
+	def [](id)
+		if id.class == Fixnum
+			return @memories[id]
+		elsif id.class == String
+			m = get_memory id
+			raise ToolException.new "MemoryManager[\"#{id}\"]: memory does not exists" unless m
+			return m
+		else
+			raise ToolException.new "MemoryManager[]: only integer or string type parameter is accepted"
+		end
 	end
 
 	def write_byte(address, byte, to_memory=nil)
