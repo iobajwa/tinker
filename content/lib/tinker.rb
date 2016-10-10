@@ -20,32 +20,36 @@ class Tinker
 		@raw_hex_image = []
 	end
 
-	def []=(var_name, value)
-		v = get_variable var_name
-		begin
-			value = v.serialize value
-			cpu.write_memory v.memory_name, v.address, v.size, value
-		rescue ToolException => ex
-			raise ToolException.new "Tinker: error writing variable '#{v.name}': " + ex.message
-		end
-	end
-
+	# read variable value using 'tinker["var_name"]' syntax
 	def [](var_name)
 		v = get_variable var_name
 		begin
-			raw = cpu.read_memory v.memory_name, v.address, v.size
+			raw = cpu.memories[v.memory_name].read_object( v.address, v.size )
 			return v.deserialize raw
 		rescue ToolException => ex
 			raise ToolException.new "Tinker: error reading variable '#{v.name}': " + ex.message
 		end
 	end
 
+	# write variable value using 'tinker["var_name"] = new_value' syntax
+	def []=(var_name, value)
+		v = get_variable var_name
+		begin
+			value = v.serialize value
+			cpu.memories[v.memory_name].write_object value, v.address
+		rescue ToolException => ex
+			raise ToolException.new "Tinker: error writing variable '#{v.name}': " + ex.message
+		end
+	end
+
+	# returns the var_name matching variable instance
 	def get_variable(var_name)
 		var_name.downcase!
 		@variables.each {  |v| return v if v.name.downcase == var_name }
 		raise ToolException.new "Tinker: variable not found ('#{var_name}')"
 	end
 
+	# loads a hex-image and variable information using meta-file and returns a valid Tinker object
 	def Tinker.load_image(hex_file, meta_file)
 		raise ToolException.new "Tinker: hex file ('#{hex_file}') does not exists" unless File.exists? hex_file
 		raise ToolException.new "Tinker: meta file ('#{meta_file}') does not exists" unless File.exists? meta_file

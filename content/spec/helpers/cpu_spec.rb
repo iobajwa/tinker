@@ -31,15 +31,15 @@ describe CPU do
 					
 					found_metadata = CPU.find_cpu_metadata ["b"]
 					
-					found_metadata.should be == 'bah'
+					found_metadata.should be == { :metadata => 'bah' }
 				end
 				
 				it "an alias matches" do
-					expect(CPU).to receive(:known_cpus).and_return({'a' => { :alises => ['ah'] }, 'k' => {:aliases => ['c.', 'b.'], :metadata => 'bah'}})
+					expect(CPU).to receive(:known_cpus).and_return({'a' => { :alises => ['ah'] }, 'k' => { :aliases => ['c.', 'b.'] }})
 					
 					found_metadata = CPU.find_cpu_metadata ["b", "b."]
 					
-					found_metadata.should be == 'bah'
+					found_metadata.should be == { :aliases => ['c.', 'b.'] }
 				end
 			end
 		end
@@ -54,13 +54,13 @@ describe CPU do
 			end
 
 			it "raw metadata contains memories defined not as Hash" do
-				dummy_raw = { :name => 'n', :instruction_size => 1, :padding_instruction => 'i', :memories => 'memories'}
+				dummy_raw = { :name => 'n', :memories => 'memories'}
 				
 				expect { CPU.parse dummy_raw }.to raise_exception(ToolException, "CPU.parse: memories for 'n' cpu defined in incorrect format")
 			end
 
 			it "raw metadata contains no information about memories" do
-				dummy_raw = { :name => 'n', :instruction_size => 1, :padding_instruction => 'i' }
+				dummy_raw = { :name => 'n' }
 				
 				expect { CPU.parse dummy_raw }.to raise_exception(ToolException, "CPU.parse: 'n' cpu has no memories defined")
 			end
@@ -69,33 +69,30 @@ describe CPU do
 		describe "parses correct cpu structure when" do
 			it "it is passed a valid cpu name as string" do
 				expect(CPU).to receive(:parse_names).with('name').and_return('a')
-				expect(CPU).to receive(:find_cpu_metadata).with('a').and_return( { :name => 'n', :instruction_size => 1, :memories => { 1 => 2 } })
+				expect(CPU).to receive(:find_cpu_metadata).with('a').and_return( { :name => 'n', :memories => { 1 => 2 } })
 				expect(MemoryManager).to receive(:parse).with( { 1 => 2 } ).and_return([])
 
 				parsed_cpu = CPU.parse 'name'
 
 				parsed_cpu.name.should be == "n"
-				parsed_cpu.instruction_size.should be == 1
-				parsed_cpu.memory_manager.should be == []
+				parsed_cpu.memories.should be == []
 			end
 			
 			it "it is passed a valid cpu alias" do
-				dummy_raw = { :name => 'n', :instruction_size => 1, :padding_instruction => 'i', :memories => {'memories' => nil}}
+				dummy_raw = { :name => 'n', :memories => {'memories' => nil}}
 				expect(MemoryManager).to receive(:parse).with({'memories' => nil}).and_return('a')
 
 				parsed_cpu = CPU.parse dummy_raw
 
 				parsed_cpu.name.should be == "n"
-				parsed_cpu.instruction_size.should be == 1
-				parsed_cpu.padding_instruction.should be == 'i'
-				parsed_cpu.memory_manager.should be == 'a'
+				parsed_cpu.memories.should be == 'a'
 			end
 		end
 
 		it "when mounting hex should mount" do
 			dummy_memories = {}
-			cpu = CPU.new 'cpu', 14, 0x34, dummy_memories
-			cpu.memory_manager = dummy_memories
+			cpu = CPU.new 'cpu', dummy_memories
+			cpu.memories = dummy_memories
 			expect(HexFile).to receive(:parse).with('lines').and_yield(1, 2)
 			expect(dummy_memories).to receive(:write_byte).with(1, 2)
 			

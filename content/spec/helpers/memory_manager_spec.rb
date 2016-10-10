@@ -36,9 +36,9 @@ describe MemoryManager do
 
 	describe "when checking memories for address overlap" do
 		it "should raise exception when memories overlap" do
-			$dummy_memory1 = Memory.new 'one', 0, 10
-			$dummy_memory2 = Memory.new 'two', 10, 20
-			$dummy_memory3 = Memory.new 'three', 29, 5
+			$dummy_memory1 = Memory.new 'one', 0, 10, 8
+			$dummy_memory2 = Memory.new 'two', 10, 20, 8
+			$dummy_memory3 = Memory.new 'three', 29, 5, 8
 			memories = [ $dummy_memory1, $dummy_memory2, $dummy_memory3 ]
 
 			expect{ MemoryManager.check_if_memories_overlap memories }.to raise_exception(
@@ -50,14 +50,14 @@ describe MemoryManager do
 
 	describe "when finding a memory by name, returns" do
 		it "nil when no matching memory object is found" do
-			$mm.memories = [ Memory.new('a', 23, 23), Memory.new('b', 10, 40) ]
+			$mm.memories = [ Memory.new('a', 23, 23, 8), Memory.new('b', 10, 40, 8) ]
 
 			$mm.get_memory('c').should be == nil
 		end
 
 		it "returns matching memory object otherwise" do
-			expected = Memory.new('b', 10, 40)
-			$mm.memories = [ Memory.new('a', 23, 23), expected ]
+			expected = Memory.new('b', 10, 40, 8)
+			$mm.memories = [ Memory.new('a', 23, 23, 8), expected ]
 
 			$mm.get_memory('B').should be == expected
 		end

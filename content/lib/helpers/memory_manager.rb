@@ -18,6 +18,12 @@ class MemoryManager
 		@memories.push memory if memory&.has_valid_permissions
 	end
 
+	def [](memory_name)
+		m = get_memory memory_name
+		raise ToolException.new "MemoryManager[\"#{memory_name}\"]: memory does not exists" unless m
+		return m
+	end
+
 	def write_byte(address, byte, to_memory=nil)
 		
 		byte &= 0xff
