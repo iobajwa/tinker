@@ -112,12 +112,31 @@ describe Tinker do
 			expect(dummy_tinker_object).to receive(:variables=).with([])
 			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
 			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
-			expect(dummy_tinker_object).to receive(:meta_file=).with('cpu')
 			dummy_cpu = {}
 			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
 			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
 
 			Tinker.load_image('hex', 'cpu').should be == dummy_tinker_object
+		end
+		it "returns a tinker instance when hash as meta_file is provided" do
+			dummy_data = { 1 => 2, 3 => 4 }
+			dummy_hex_lines = ['one', 'two']
+			dummy_tinker_object = {}
+			expect(File).to receive(:exists?).with('hex').and_return(true)
+			expect(Variable).to receive(:parse).with(1, 2).and_return('var 1')
+			expect(Variable).to receive(:parse).with(3, 4).and_return('var 2')
+			expect(File).to receive(:readlines).with('hex').and_return(dummy_hex_lines)
+			expect(Tinker).to receive(:new).and_return(dummy_tinker_object)
+			expect(CPU).to receive(:parse).with('cpu').and_return('cpu.object')
+			expect(dummy_tinker_object).to receive(:cpu=).with('cpu.object')
+			expect(dummy_tinker_object).to receive(:variables=).with(['var 1', 'var 2'])
+			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
+			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
+			dummy_cpu = {}
+			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
+			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
+
+			Tinker.load_image('hex', {:meta => { :cpu => 'cpu', :data => dummy_data } }).should be == dummy_tinker_object
 		end
 	end
 

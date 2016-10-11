@@ -48,7 +48,7 @@ class Tinker
 	def Tinker.load_image(hex_file, meta_file)
 		raise ToolException.new "Tinker: hex file ('#{hex_file}') does not exists" unless File.exists? hex_file
 
-		cpu_info, variables = Tinker.parse_meta_file meta_file
+		cpu_info, variables, is_meta_filed = Tinker.parse_meta_file meta_file
 		raw_hex_image = File.readlines hex_file
 		
 		t = Tinker.new
@@ -56,7 +56,7 @@ class Tinker
 		t.variables     = variables
 		t.raw_hex_image = raw_hex_image
 		t.hex_file      = hex_file
-		t.meta_file     = meta_file
+		t.meta_file     = meta_file if is_meta_filed
 
 		t.cpu.mount_hex raw_hex_image
 		return t
@@ -84,16 +84,26 @@ class Tinker
 
 	private 
 	def Tinker.parse_meta_file(raw_meta)
-		return raw_meta, [] if raw_meta =~ /^[a-z0-9_]*$/i     # doesn't look like a flea name, must be a cpu name
-		raise ToolException.new "Tinker: meta file ('#{raw_meta}') does not exists" unless File.exists? raw_meta
+		meta_filed = false
 		
-		raw_meta = YAML.load_file(raw_meta)[:meta]
+		if raw_meta.class == String
+			
+			return raw_meta, [], false if raw_meta =~ /^[a-z0-9_]*$/i     # doesn't look like a flea name, must be a cpu name
+			raise ToolException.new "Tinker: meta file ('#{raw_meta}') does not exists" unless File.exists? raw_meta
+			raw_meta = YAML.load_file(raw_meta)[:meta]
+			meta_filed = true
+
+		elsif raw_meta.class == Hash
+			raw_meta = raw_meta[:meta]
+		else
+			raise ToolException.new "meta_file can only be a string (cpu name/filename) or hash containing metadata"
+		end
 		variables = []
 		symbols = raw_meta[:data]
 		symbols.each_pair {  |name, raw| 
 				variables.push Variable.parse name, raw
 			} if symbols
-		return raw_meta[:cpu], variables
+		return raw_meta[:cpu], variables, meta_filed
 	end
 
 	def write_value_object(var, val)
