@@ -113,4 +113,23 @@ describe Tinker do
 
 		$tinker.write_default_values
 	end
+
+	describe "when dumping loaded image to a file" do
+		it "creates valid file contents" do
+			expect($dummy_cpu).to receive(:dump_hex).and_return("lines")
+			dummy_file = double("dummy file").as_null_object
+			expect(dummy_file).to receive(:puts).with("lines")
+			expect(dummy_file).to receive(:close)
+			expect(File).to receive(:new).with("blah", "w").and_return(dummy_file)
+
+			$tinker.dump "blah"
+		end
+
+		it "makes sure the file is closed when an exception is encountered" do
+			expect($dummy_cpu).to receive(:dump_hex).and_return("lines")
+			expect(File).to receive(:new).with("blah", "w").and_raise("blaah")
+
+			expect { $tinker.dump "blah" }.to raise_exception("blaah")
+		end
+	end
 end

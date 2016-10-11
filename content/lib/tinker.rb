@@ -69,8 +69,16 @@ class Tinker
 		}
 	end
 
-	def to_hex_file(file)
-		raise "Not Implemented!"
+	def dump(filename)
+		lines = cpu.dump_hex
+		begin
+			file = File.new(filename, "w")
+			file.puts lines
+			file.close
+		rescue => ex
+			file.close if file && !file.closed?
+			raise ex
+		end
 	end
 
 	private 

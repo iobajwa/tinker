@@ -1,6 +1,7 @@
 
 require "spec_helper"
 require "helpers/cpu"
+require "helpers/memory"
 require "helpers/memory_manager"
 require "helpers/tool_messages"
 
@@ -88,15 +89,31 @@ describe CPU do
 				parsed_cpu.memories.should be == 'a'
 			end
 		end
+	end
 
-		it "when mounting hex should mount" do
-			dummy_memories = {}
-			cpu = CPU.new 'cpu', dummy_memories
-			cpu.memories = dummy_memories
-			expect(HexFile).to receive(:parse).with('lines').and_yield(1, 2)
-			expect(dummy_memories).to receive(:write_byte).with(1, 2)
-			
-			cpu.mount_hex 'lines'
-		end
+	it "when mounting hex should mount" do
+		cpu = CPU.new 'cpu'
+		dummy_memories = {}
+		cpu.memories = dummy_memories
+		expect(HexFile).to receive(:parse).with('lines').and_yield(1, 2)
+		expect(dummy_memories).to receive(:write_byte).with(1, 2)
+		
+		cpu.mount_hex 'lines'
+	end
+
+	it "when dumping hex should delegate work the HexFile.encode with properly formed raw_blocks" do
+		cpu = CPU.new 'cpu'
+		dummy_memories = [ Memory.new( 'a', 0, 10, 1 ), Memory.new( 'b', 20, 50, 2 ) ]
+		dummy_memories[0].contents = [ 1, 2 ]
+		dummy_memories[1].contents = [ 3, 4 ]
+		dummy_memory_manager = {}
+		cpu.memories = dummy_memory_manager
+		expect(dummy_memory_manager).to receive(:memories).and_return(dummy_memories)
+		expect(HexFile).to receive(:encode).with(
+			{ 0 => {:start_address => 0, :contents => [1, 2] }, 
+			  1 => {:start_address => 20, :contents => [3, 4] },
+			}).and_return("result")
+		
+		cpu.dump_hex.should be == "result"
 	end
 end

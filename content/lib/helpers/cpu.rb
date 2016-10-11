@@ -10,7 +10,7 @@ class CPU
 	              :memories
 
 	def initialize(name, memories={})
-		@name           = name
+		@name = name
 		@memories = memories == {} ? MemoryManager.new : MemoryManager.parse( memories )
 	end
 
@@ -20,14 +20,15 @@ class CPU
 		} if raw_lines
 	end
 
-	def write_object(memory_name, address, data, size)
-		# before writing memory, we append the data using
-		@memories.write_byte
-		raise "Not Implemented!"
-	end
-
-	def read_object(memory_name, address, size)
-		raise "Not Implemented!"
+	def dump_hex
+		index = 0
+		raw_blocks = {}
+		@memories.memories.each {  |m|
+			raw_blocks[index] = { :start_address => m.start_address, :contents => m.contents }
+			index += 1
+		}
+		
+		return HexFile.encode raw_blocks
 	end
 
 
