@@ -69,21 +69,21 @@ describe Tinker do
 		describe "should raise exception when" do
 			it "hex_file does not exists" do
 				expect(File).to receive(:exists?).with('hex').and_return(false)
-				expect { Tinker.load_image 'hex', 'meta' }.to raise_exception(ToolException, "Tinker: hex file ('hex') does not exists")
+				expect { Tinker.load_image 'hex', 'meta.file' }.to raise_exception(ToolException, "Tinker: hex file ('hex') does not exists")
 			end
 			it "meta_file does not exists" do
 				expect(File).to receive(:exists?).with('hex').and_return(true)
-				expect(File).to receive(:exists?).with('meta').and_return(false)
-				expect { Tinker.load_image 'hex', 'meta' }.to raise_exception(ToolException, "Tinker: meta file ('meta') does not exists")
+				expect(File).to receive(:exists?).with('meta.file').and_return(false)
+				expect { Tinker.load_image 'hex', 'meta.file' }.to raise_exception(ToolException, "Tinker: meta file ('meta.file') does not exists")
 			end
 		end
-		it "returns a tinker instance otherwise" do
+		it "returns a tinker instance when a meta_file is provided" do
 			dummy_data = { 1 => 2, 3 => 4 }
 			dummy_hex_lines = ['one', 'two']
 			dummy_tinker_object = {}
 			expect(File).to receive(:exists?).with('hex').and_return(true)
-			expect(File).to receive(:exists?).with('meta').and_return(true)
-			expect(YAML).to receive(:load_file).with('meta').and_return({:meta => { :cpu => 'cpu', :data => dummy_data } })
+			expect(File).to receive(:exists?).with('meta.file').and_return(true)
+			expect(YAML).to receive(:load_file).with('meta.file').and_return({:meta => { :cpu => 'cpu', :data => dummy_data } })
 			expect(Variable).to receive(:parse).with(1, 2).and_return('var 1')
 			expect(Variable).to receive(:parse).with(3, 4).and_return('var 2')
 			expect(File).to receive(:readlines).with('hex').and_return(dummy_hex_lines)
@@ -93,12 +93,31 @@ describe Tinker do
 			expect(dummy_tinker_object).to receive(:variables=).with(['var 1', 'var 2'])
 			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
 			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
-			expect(dummy_tinker_object).to receive(:meta_file=).with('meta')
+			expect(dummy_tinker_object).to receive(:meta_file=).with('meta.file')
 			dummy_cpu = {}
 			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
 			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
 
-			Tinker.load_image('hex', 'meta').should be == dummy_tinker_object
+			Tinker.load_image('hex', 'meta.file').should be == dummy_tinker_object
+		end
+		it "returns a tinker instance when a cpu name is provided" do
+			dummy_data = { 1 => 2, 3 => 4 }
+			dummy_hex_lines = ['one', 'two']
+			dummy_tinker_object = {}
+			expect(File).to receive(:exists?).with('hex').and_return(true)
+			expect(File).to receive(:readlines).with('hex').and_return(dummy_hex_lines)
+			expect(Tinker).to receive(:new).and_return(dummy_tinker_object)
+			expect(CPU).to receive(:parse).with('cpu').and_return('cpu.object')
+			expect(dummy_tinker_object).to receive(:cpu=).with('cpu.object')
+			expect(dummy_tinker_object).to receive(:variables=).with([])
+			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
+			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
+			expect(dummy_tinker_object).to receive(:meta_file=).with('cpu')
+			dummy_cpu = {}
+			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
+			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
+
+			Tinker.load_image('hex', 'cpu').should be == dummy_tinker_object
 		end
 	end
 

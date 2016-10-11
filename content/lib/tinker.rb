@@ -47,7 +47,6 @@ class Tinker
 	# loads a hex-image and variable information using meta-file and returns a valid Tinker object
 	def Tinker.load_image(hex_file, meta_file)
 		raise ToolException.new "Tinker: hex file ('#{hex_file}') does not exists" unless File.exists? hex_file
-		raise ToolException.new "Tinker: meta file ('#{meta_file}') does not exists" unless File.exists? meta_file
 
 		cpu_info, variables = Tinker.parse_meta_file meta_file
 		raw_hex_image = File.readlines hex_file
@@ -63,12 +62,14 @@ class Tinker
 		return t
 	end
 
+	
 	def write_default_values
 		variables.each {  |v|
 			write_value_object v, v.default_value
 		}
 	end
 
+	# dumps the image-in-memory to a hexfile
 	def dump(filename)
 		lines = cpu.dump_hex
 		begin
@@ -83,6 +84,9 @@ class Tinker
 
 	private 
 	def Tinker.parse_meta_file(raw_meta)
+		return raw_meta, [] if raw_meta =~ /^[a-z0-9_]*$/i     # doesn't look like a flea name, must be a cpu name
+		raise ToolException.new "Tinker: meta file ('#{raw_meta}') does not exists" unless File.exists? raw_meta
+		
 		raw_meta = YAML.load_file(raw_meta)[:meta]
 		variables = []
 		symbols = raw_meta[:data]
@@ -90,11 +94,6 @@ class Tinker
 				variables.push Variable.parse name, raw
 			} if symbols
 		return raw_meta[:cpu], variables
-	end
-
-	def Tinker.mount_cpu_info(raw)
-		return unless raw
-		@cpu = CPU.parse raw
 	end
 
 	def write_value_object(var, val)
