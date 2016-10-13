@@ -8,6 +8,35 @@ describe Memory do
 		$memory = Memory.new 'm', 2, 20, 8
 	end
 
+	describe "when converting memory-address to array-index, should return" do
+		it "-1 when passed address is less than start_address" do
+			$memory.address_to_index(1).should be == -1
+		end
+		it "-1 when passed address is greater than end_address" do
+			$memory.address_to_index(22).should be == -1
+		end
+		it "returns translated index otherwise" do
+			$memory.address_to_index(2).should be == 0
+			$memory.address_to_index(21).should be == 19
+			$memory = Memory.new 'm', 0, 18, 1
+			$memory.address_to_index(2).should be == 2
+			$memory.address_to_index(17).should be == 17
+		end
+	end
+
+	describe "when converting array-index to memory-address, should return" do
+		it "-1 when passed index is less than 0" do
+			$memory.index_to_address(-25).should be == -1
+		end
+		it "-1 when passed index lies beyond the end_address" do
+			$memory.index_to_address(20).should be == -1
+		end
+		it "returns translated address otherwise" do
+			$memory.index_to_address(2).should be == 4
+			$memory.index_to_address(19).should be == 21
+		end
+	end
+
 	describe "when checking if an address is within the memory bounds" do
 		it "returns true when it lies within the range" do
 			within_bounds = $memory.address_exists?(19).should be == true

@@ -3,16 +3,18 @@
 	"helpers/tool_messages.rb",
 	"helpers/variable.rb",
 	"helpers/cpu.rb",
+	"helpers/diff_results.rb",
 ].each {  |req| require "#{File.expand_path(File.dirname(__FILE__))}/#{req}" }
 require "yaml"
 
 
 class Tinker
-	attr_accessor :cpu, :variables, :raw_hex_image, :hex_file, :meta_file
+	attr_accessor :name, :cpu, :variables, :raw_hex_image, :hex_file, :meta_file
 
-	def initialize
-		@cpu = nil
-		@variables = []
+	def initialize(name)
+		@name          = name
+		@cpu           = nil
+		@variables     = []
 		@raw_hex_image = []
 	end
 
@@ -49,9 +51,11 @@ class Tinker
 		raise ToolException.new "Tinker: hex file ('#{hex_file}') does not exists" unless File.exists? hex_file
 
 		cpu_info, variables, is_meta_filed = Tinker.parse_meta_file meta_file
-		raw_hex_image = File.readlines hex_file
 		
-		t = Tinker.new
+		raw_hex_image = File.readlines hex_file
+		name          = File.basename hex_file, ".*"
+		
+		t = Tinker.new name
 		t.cpu           = CPU.parse cpu_info
 		t.variables     = variables
 		t.raw_hex_image = raw_hex_image
@@ -81,6 +85,91 @@ class Tinker
 			raise ex
 		end
 	end
+
+
+=begin
+	return differences in the base_file and other_file
+	what all can differ?
+		+ memory extra in 'other'
+		- memory missing in 'other'
+		+ memory cell extra in 'other'
+		- memory cell missing in 'other'
+		~ memory cell values differ
+=end
+	def Tinker.diff(base_file, other_file, meta)
+		base_image  = Tinker.safe_load_image_file base_file, meta
+		other_image = Tinker.safe_load_image_file other_file, meta
+
+		base_memories  = base_image.cpu.memories
+		other_memories = other_image.cpu.memories
+
+		# figure out memory level diffs
+		diff_results = Tinker.perform_memory_count_diff base_memories, other_memories
+
+		# figure out memory-cell level diffs
+		diff_results.push Tinker.perform_memory_cell_diff base_image.name, base_memories, other_memories
+
+		return diff_results.flatten
+	end
+
+
+	def Tinker.safe_load_image_file(file, meta)
+		return file if file.class == Tinker
+		return Tinker.load_image file, meta		
+	end
+
+	def Tinker.perform_memory_count_diff(base_memories, other_memories)
+		diff_results = []
+		base_memories.each {  |base_memory|
+			name = base_memory.name
+			size = base_memory.size
+			d    = MemoryDiff.valid_hit?( name, size, base_memory, other_memories.get_memory( name ) )
+			next if d == nil
+			diff_results.push d
+		}
+
+		other_memories.each {  |other_memory|
+			name = other_memory.name
+			size = other_memory.size
+			d    = MemoryDiff.valid_hit?( name, size, base_memories.get_memory( name ), other_memory )
+			next if d == nil
+			diff_results.push d
+		}
+		return diff_results
+	end
+
+	def Tinker.perform_memory_cell_diff(base_image_name, base_memories, other_memories)
+		diff_results = []
+
+		base_memories.each {  |base_memory|
+			
+			name = base_memory.name
+			other_memory = other_memories.get_memory name
+			next if other_memory == nil
+
+			base_length  = base_memory.contents.length
+			other_length = other_memory.contents.length
+			length       = base_length > other_length ? base_length : other_length
+			size         = base_memory.size
+
+			length.times {  |i|
+
+				base_value  = base_memory.contents[i]
+				other_value = other_memory.contents[i]
+				address = base_memory.index_to_address i
+				address = other_memory.index_to_address i if address < 0
+				d = MemoryCellDiff.valid_hit? name, size, address, base_value, other_value
+				next if d == nil
+				d.base_name = base_image_name
+				diff_results.push d
+			}
+		}
+
+		return diff_results
+	end
+
+
+
 
 	private 
 	def Tinker.parse_meta_file(raw_meta)

@@ -30,6 +30,23 @@ class MemoryManager
 		end
 	end
 
+	def count
+		return @memories.length
+	end
+
+	def each(&func)
+		@memories.each {  |m|
+			func.call m
+		} if func
+	end
+
+	# returns a hash of memory-names => memory-sizes
+	def list
+		names = {}
+		@memories.each {  |m| names[m.name] = m.size  }
+		return names
+	end
+
 	def write_byte(address, byte, to_memory=nil)
 		
 		byte &= 0xff

@@ -166,11 +166,18 @@ class Memory
 	end
 
 
-	private 
 	def address_to_index(address)
 		end_address = @start_address + @size - 1
 		return -1 if address < @start_address || address > end_address
 		return address - @start_address
+	end
+
+	def index_to_address(index)
+		return -1 if index < 0
+		end_address = @start_address + @size - 1
+		index += start_address
+		return -1 if index > end_address
+		return index
 	end
 
 end

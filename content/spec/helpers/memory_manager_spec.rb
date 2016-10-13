@@ -184,4 +184,22 @@ describe MemoryManager do
 			end
 		end
 	end
+
+	it "when obtaining a list of memory names, returns correct list of names" do
+		expect($dummy_memory1).to receive(:name).and_return('1')
+		expect($dummy_memory1).to receive(:size).and_return(1)
+		expect($dummy_memory2).to receive(:name).and_return('2')
+		expect($dummy_memory2).to receive(:size).and_return(2)
+		expect($dummy_memory3).to receive(:name).and_return('3')
+		expect($dummy_memory3).to receive(:size).and_return(3)
+
+
+		$mm.list.should be == {'1' => 1, '2' => 2, '3' => 3}
+	end
+
+	it "when iterating through each" do
+		got_result = []
+		$mm.each {  |m| got_result.push m }
+		got_result.should be == [ $dummy_memory1, $dummy_memory2, $dummy_memory3 ]
+	end
 end
