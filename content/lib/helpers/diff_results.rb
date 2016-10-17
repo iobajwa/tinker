@@ -60,7 +60,7 @@ class MemoryCellDiff < DiffResult
 			when "-"
 				result += "'#{hex_to_s @base_value, 2}'"
 			when "~"
-				result += "'#{hex_to_s @other_value, 2}' (#{@base_name} was '#{hex_to_s @base_value, 2}')"
+				result += "'#{hex_to_s @other_value, 2}' (#{@base_name} is '#{hex_to_s @base_value, 2}')"
 		end
 		return result
 	end

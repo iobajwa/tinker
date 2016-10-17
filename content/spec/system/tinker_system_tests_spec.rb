@@ -35,7 +35,7 @@ describe Tinker do
 			# make sure we altered only a single cell
 			diffs = Tinker.diff hex_file, output_hex_file, meta_file
 			diffs.length.should be == 1
-			diffs[0].to_s.should be == "~ flash @ 0x3F00 : '0xD5' (sample was '0xE6')"
+			diffs[0].to_s.should be == "~ flash @ 0x3F00 : '0xD5' (sample is '0xE6')"
 		end
 	end
 

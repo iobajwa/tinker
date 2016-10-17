@@ -71,7 +71,7 @@ describe MemoryCellDiff do
 	describe "when converting the diff to string, returns correct string when" do
 		it "neither cell is nil" do
 			d = MemoryCellDiff.new 'flash', 0xffff, '~', 23, 2, 3
-			d.to_s.should be == "~ flash @ 0x0017 : '0x03' (base was '0x02')"
+			d.to_s.should be == "~ flash @ 0x0017 : '0x03' (base is '0x02')"
 		end
 		it "first cell is nil" do
 			d = MemoryCellDiff.new 'flash', 0xff, '+', 1, nil, 0x12
