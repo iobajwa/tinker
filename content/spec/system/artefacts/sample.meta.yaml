@@ -1,0 +1,76 @@
+# tool also emits a symbol.map.yaml describing each variable: size, offset, value. This .map.yaml file 
+# can be used by hexmate
+
+:meta:
+    :cpu: PIC16F1516
+    :data:
+        :voltage:
+            :size: 2
+            :type: u16
+            :address: 16128
+            :value: 230
+            :memory_name: flash
+        :gap:
+            :size: 2
+            :type: u16
+            :address: 16132
+            :value: 3
+            :memory_name: flash
+        :td:
+            :size: 1
+            :type: u8
+            :address: 16136
+            :value: 30
+            :memory_name: flash
+        :CT:
+            :size: 2
+            :type: u16
+            :address: 16138
+            :value: 500
+            :memory_name: flash
+        :max_volts:
+            :size: 2
+            :type: u16
+            :address: 16142
+            :value: 250
+            :memory_name: flash
+        :min_volts:
+            :size: 2
+            :type: u16
+            :address: 16146
+            :value: 210
+            :memory_name: flash
+        :max_amps:
+            :size: 2
+            :type: u16
+            :address: 16150
+            :value: 150
+            :memory_name: flash
+        :auto_scroll_enabled:
+            :size: 1
+            :type: bool
+            :address: 0
+            :value: true
+            :memory_name: flash
+        :focus_page_ID:
+            :size: 1
+            :type: u8
+            :address: 0
+            :value: 0
+            :memory_name: flash
+        :trip_time_delay:
+            :size: 2
+            :type: u16
+            :address: 0
+            :value: 0
+            :memory_name: flash
+        :trip_time_delay_amps:
+            :size: 2
+            :type: u16
+            :address: 0
+            :value: 0
+            :memory_name: flash
+
+        # :x.amps_DF:
+        # :x.freq_DF:
+        # :x.raw_amps_offset:
