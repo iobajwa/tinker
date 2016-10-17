@@ -86,6 +86,9 @@ class Tinker
 		end
 	end
 
+	def diff(other_file)
+	end
+
 
 =begin
 	return differences in the base_file and other_file

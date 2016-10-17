@@ -172,7 +172,7 @@ describe MemoryManager do
 			end
 			it "raises exception when no matching object is found" do
 				expect($mm).to receive(:get_memory).with("blah").and_return nil
-				expect { $mm["blah"] }.to raise_exception(ToolException, "MemoryManager[\"blah\"]: memory does not exists")
+				expect { $mm["blah"] }.to raise_exception(ToolException, "MemoryManager['blah']: memory does not exists")
 			end
 		end
 		describe "index" do
@@ -201,5 +201,31 @@ describe MemoryManager do
 		got_result = []
 		$mm.each {  |m| got_result.push m }
 		got_result.should be == [ $dummy_memory1, $dummy_memory2, $dummy_memory3 ]
+	end
+
+	describe "when setting contents of a specified memory using indexer" do
+		describe "raises exception when" do
+			it "neither Fixnum nor string is passed as id" do
+				expect{ $mm[1.2] }.to raise_exception(ToolException, "MemoryManager['1.2']: only integer or string type as parameter is accepted")
+			end
+			it "memory could not be found" do
+				expect{ $mm[5] }.to raise_exception(ToolException, "MemoryManager['5']: memory does not exists")
+
+				expect($mm).to receive(:get_memory).with("1").and_return(nil)
+				expect{ $mm["1"] }.to raise_exception(ToolException, "MemoryManager['1']: memory does not exists")
+			end
+		end
+		describe "should set contents for the correct memory when" do
+			it "Fixnum is passed as ID" do
+				expect($dummy_memory2).to receive(:fill_all).with("value")
+				$mm[1] = "value"
+			end
+			it "memory-name is passed as ID" do
+				expect($mm).to receive(:get_memory).with("1").and_return($dummy_memory1)
+				expect($dummy_memory1).to receive(:fill_all).with("value")
+				
+				$mm["1"] = "value"
+			end
+		end
 	end
 end

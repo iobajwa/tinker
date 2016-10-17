@@ -438,4 +438,19 @@ describe Memory do
 			end
 		end
 	end
+
+	describe "when filling the contents with a specific value, should" do
+		it "raise exception when the passed value is neither nil nor a Fixnum" do
+			expect { $memory.fill_all 'a'}.to raise_exception( ToolException, "memory.fill_all: value can either be a Fixnum or nil" )
+		end
+		it "should fill in the values" do
+			$memory.contents = [1, 2, 3, 4, 5]
+			$memory.fill_all nil
+			$memory.contents.should be == [nil, nil, nil, nil, nil]
+
+			$memory.contents = [1, 2, 3, 4, 5]
+			$memory.fill_all 0x1234
+			$memory.contents.should be == [0x34, 0x34, 0x34, 0x34, 0x34]
+		end
+	end
 end

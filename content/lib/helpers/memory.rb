@@ -117,6 +117,13 @@ class Memory
 		return address_to_index(address) > -1
 	end
 
+	# fills .contents with @value
+	def fill_all(value)
+		raise ToolException.new "memory.fill_all: value can either be a Fixnum or nil" if value != nil && value.class != Fixnum
+		value = value & 0xff if value != nil
+		contents.fill value
+	end
+
 
 =begin
 	format:

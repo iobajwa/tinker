@@ -19,14 +19,19 @@ class MemoryManager
 	end
 
 	def [](id)
-		if id.class == Fixnum
-			return @memories[id]
-		elsif id.class == String
-			m = get_memory id
-			raise ToolException.new "MemoryManager[\"#{id}\"]: memory does not exists" unless m
-			return m
-		else
-			raise ToolException.new "MemoryManager[]: only integer or string type parameter is accepted"
+		begin
+			return find_memory id
+		rescue ToolException => ex
+			raise ToolException.new "MemoryManager['#{id}']: " + ex.message
+		end
+	end
+
+	def []=(id, value)
+		begin
+			m = find_memory id
+			m.fill_all value
+		rescue ToolException => ex
+			raise ToolException.new "MemoryManager['#{id}']: " + ex.message
 		end
 	end
 
@@ -120,5 +125,17 @@ class MemoryManager
 				end
 			}
 		}
+	end
+
+	private
+	def find_memory(id)
+		m = nil
+		case id.class.to_s
+			when "Fixnum" then m = @memories[id]
+			when "String" then m = get_memory id
+			else raise ToolException.new "only integer or string type as parameter is accepted"
+		end
+		raise ToolException.new "memory does not exists" unless m
+		return m
 	end
 end
