@@ -176,5 +176,31 @@ describe HexFile do
 				generated_entry.should be == ":020000041234B4"
 			end
 		end
+
+		describe "should return correct serialized results when" do
+			it "no memory contents are present" do
+				raw_blocks = { 0 => { :start_address => 0, :contents => [nil, nil, nil, nil, nil, nil] } }
+				
+				result = HexFile.encode raw_blocks
+
+				result.should be == [HexFile.END_OF_HEX_FILE_ENTRY]
+			end
+
+			it "memory contents are contineous (any empty cells are empty)" do
+				raw_blocks = { 0 => { :start_address => 0, :contents => [1, 2, 3, 4, 5, 6] } }
+
+				result = HexFile.encode raw_blocks, 2
+
+				result.should be == [":020000000102FB", ":020002000304F5", ":020004000506EF", ":00000001FF"]
+			end
+
+			it "memory contents are fragmented (presence of empty cells)" do
+				raw_blocks = { 0 => { :start_address => 0, :contents => [1, nil, nil, nil, nil, 6] } }
+
+				result = HexFile.encode raw_blocks, 2
+
+				result.should be == [":0100000001FE", ":0100050006F4", ":00000001FF"]
+			end
+		end
 	end
 end

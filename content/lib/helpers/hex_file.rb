@@ -101,14 +101,14 @@ class HexFile
 			contents      = meta[:contents]
 
 			if start_address > 0xFFFF
-				lines.push( generate_extended_linear_address_record_entry( start_address - 0xFFFF ) )
+				lines.push generate_extended_linear_address_record_entry( start_address - 0xFFFF ) 
 				offset = (( start_address >> 16 ) & 0xFFFF)
 			end
 
 			counter = 0
 			while offset < contents.length
 				payload, next_offset, corrected_offset = get_next_payload contents, offset, max_record_length
-				lines.push serialize_payload payload, corrected_offset
+				lines.push serialize_payload payload, corrected_offset if payload
 				offset = next_offset
 			end
 		}
@@ -164,4 +164,9 @@ class HexFile
 	def HexFile.h16_to_a_bigend(value)
 		return [ (value >> 8) & 0xff, value & 0xff ]
 	end
+
+	def HexFile.END_OF_HEX_FILE_ENTRY
+		return END_OF_HEX_FILE_ENTRY
+	end
+
 end
