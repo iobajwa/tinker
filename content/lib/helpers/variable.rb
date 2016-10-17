@@ -22,9 +22,14 @@ class Variable
 	# converts higher-level 'value' to lower-level byte stream (byte-array; encoding: little-endian) 
 	# based upon the variable.type
 	def serialize(value)
-		return [] if value == nil
-
 		bytes = []
+
+		if value == nil
+			size = @size
+			size *= @array_depth if @is_array
+			size.times { bytes.push nil }
+			return bytes
+		end
 
 		begin
 			if @is_array

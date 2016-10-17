@@ -322,6 +322,31 @@ describe Memory do
 					$memory.contents.should be == [nil, nil, nil, 2, 0x12, 0x34, 1, 0x12, 0x34]
 				end
 			end
+
+			describe "empty object is passed" do
+				it "cell_size is 1 byte" do
+					expect($memory).to receive(:is_writeable?).and_return(true)
+					expect($memory).to receive(:address_exists?).and_return(true)
+					expect($memory).to receive(:address_to_index).with(1).and_return(3)
+					$memory.cell_size = 1
+
+					$memory.write_object [nil, nil, nil, nil], 1
+
+					$memory.contents.should be == [nil, nil, nil, nil, nil, nil, nil]
+				end
+				it "cell_size is > 1 byte" do
+					expect($memory).to receive(:is_writeable?).and_return(true)
+					expect($memory).to receive(:address_exists?).and_return(true)
+					expect($memory).to receive(:address_to_index).with(1).and_return(3)
+					$memory.cell_size = 3
+					$memory.padding = 0x1234
+					$memory.data_index = 0
+
+					$memory.write_object [nil, nil], 1
+
+					$memory.contents.should be == [nil, nil, nil, nil, nil, nil, nil, nil, nil]
+				end
+			end
 		end
 	end
 

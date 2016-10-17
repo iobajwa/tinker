@@ -63,6 +63,7 @@ class Memory
 		# we expect to receive data in little-endian format but reverse the data-array 
 		# if the memory stores it in big-endian format
 		raw.reverse! unless is_little_endian?
+		raw_is_empty = is_raw_object_empty? raw
 		
 		bytes = []
 		if @cell_size > 1
@@ -70,8 +71,12 @@ class Memory
 				cell    = []
 				padding = @padding
 				(@cell_size - 1).times {
-					cell.push padding & 0xff
-					padding >>= 8
+					if raw_is_empty
+						cell.push nil
+					else
+						cell.push padding & 0xff
+						padding >>= 8
+					end
 				}
 				cell.reverse! unless is_little_endian?
 				cell.insert 0, b if @data_index == 0
@@ -187,4 +192,9 @@ class Memory
 		return index
 	end
 
+	private
+	def is_raw_object_empty?(raw)
+		raw_unique = raw.uniq
+		return raw_unique.length == 1 && raw_unique[0] == nil
+	end
 end

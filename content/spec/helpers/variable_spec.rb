@@ -133,6 +133,19 @@ describe Variable do
 					$var.serialize('sat').should be == [115, 97, 116, 0, 0, 0]
 				end
 			end
+
+			describe "value is nil and" do
+				it "is non array" do
+					$var.size = 2
+					$var.serialize(nil).should be == [nil, nil]
+				end
+				it "is array" do
+					$var.size = 2
+					$var.is_array = true
+					$var.array_depth = 3
+					$var.serialize(nil).should be == [nil, nil, nil, nil, nil, nil]
+				end
+			end
 		end
 	end
 
