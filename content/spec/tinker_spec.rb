@@ -81,9 +81,10 @@ describe Tinker do
 			dummy_data = { 1 => 2, 3 => 4 }
 			dummy_hex_lines = ['one', 'two']
 			dummy_tinker_object = {}
+			dummy_meta = { :cpu => 'cpu', :data => dummy_data }
 			expect(File).to receive(:exists?).with('file.hex').and_return(true)
 			expect(File).to receive(:exists?).with('meta.file').and_return(true)
-			expect(YAML).to receive(:load_file).with('meta.file').and_return({:meta => { :cpu => 'cpu', :data => dummy_data } })
+			expect(YAML).to receive(:load_file).with('meta.file').and_return({:meta => dummy_meta })
 			expect(Variable).to receive(:parse).with(1, 2).and_return('var 1')
 			expect(Variable).to receive(:parse).with(3, 4).and_return('var 2')
 			expect(File).to receive(:readlines).with('file.hex').and_return(dummy_hex_lines)
@@ -94,6 +95,7 @@ describe Tinker do
 			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
 			expect(dummy_tinker_object).to receive(:hex_file=).with('file.hex')
 			expect(dummy_tinker_object).to receive(:meta_file=).with('meta.file')
+			expect(dummy_tinker_object).to receive(:meta=).with(dummy_meta)
 			dummy_cpu = {}
 			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
 			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
@@ -112,6 +114,7 @@ describe Tinker do
 			expect(dummy_tinker_object).to receive(:variables=).with([])
 			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
 			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
+			expect(dummy_tinker_object).to receive(:meta=).with({})
 			dummy_cpu = {}
 			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
 			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
@@ -120,6 +123,7 @@ describe Tinker do
 		end
 		it "returns a tinker instance when hash as meta_file is provided" do
 			dummy_data = { 1 => 2, 3 => 4 }
+			dummy_meta = { :cpu => 'cpu', :data => dummy_data }
 			dummy_hex_lines = ['one', 'two']
 			dummy_tinker_object = {}
 			expect(File).to receive(:exists?).with('hex').and_return(true)
@@ -132,11 +136,12 @@ describe Tinker do
 			expect(dummy_tinker_object).to receive(:variables=).with(['var 1', 'var 2'])
 			expect(dummy_tinker_object).to receive(:raw_hex_image=).with(dummy_hex_lines)
 			expect(dummy_tinker_object).to receive(:hex_file=).with('hex')
+			expect(dummy_tinker_object).to receive(:meta=).with(dummy_meta)
 			dummy_cpu = {}
 			expect(dummy_tinker_object).to receive(:cpu).and_return(dummy_cpu)
 			expect(dummy_cpu).to receive(:mount_hex).with(dummy_hex_lines)
 
-			Tinker.load_image('hex', {:meta => { :cpu => 'cpu', :data => dummy_data } }).should be == dummy_tinker_object
+			Tinker.load_image('hex', dummy_meta).should be == dummy_tinker_object
 		end
 	end
 
@@ -171,7 +176,7 @@ describe Tinker do
 		end
 	end
 
-	describe "when performing a diff" do
+	describe "when performing a Tinker.diff" do
 		describe "and safe-loading an image" do
 			it "returns passed object ref as-is when an Tinker object is passed" do
 				t = Tinker.new 't'
@@ -254,6 +259,29 @@ describe Tinker do
 			results = Tinker.diff 'base_file', 'other_file', 'meta_file'
 
 			results.should be == [1, 2, 3, 4]
+		end
+	end
+
+	describe "when performing $tinker.diff, should return correct results when" do
+		it "@meta is present" do
+			$tinker.meta = 'dummy_meta'
+			expect(Tinker).to receive(:diff).with($tinker, 'other', 'dummy_meta').and_return('result')
+
+			$tinker.diff('other').should be == 'result'
+		end
+		it "@meta is empty" do
+			$tinker.meta = {}
+			expect($dummy_cpu).to receive(:name).and_return('cpu')
+			expect(Tinker).to receive(:diff).with($tinker, 'other', 'cpu').and_return('result')
+
+			$tinker.diff('other').should be == 'result'
+		end
+		it "@meta is nil" do
+			$tinker.meta = nil
+			expect($dummy_cpu).to receive(:name).and_return('cpu')
+			expect(Tinker).to receive(:diff).with($tinker, 'other', 'cpu').and_return('result')
+
+			$tinker.diff('other').should be == 'result'
 		end
 	end
 end

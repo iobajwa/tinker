@@ -9,7 +9,7 @@ require "yaml"
 
 
 class Tinker
-	attr_accessor :name, :cpu, :variables, :raw_hex_image, :hex_file, :meta_file
+	attr_accessor :name, :cpu, :variables, :raw_hex_image, :meta, :hex_file, :meta_file
 
 	def initialize(name)
 		@name          = name
@@ -50,7 +50,7 @@ class Tinker
 	def Tinker.load_image(hex_file, meta_file)
 		raise ToolException.new "Tinker: hex file ('#{hex_file}') does not exists" unless File.exists? hex_file
 
-		cpu_info, variables, is_meta_filed = Tinker.parse_meta_file meta_file
+		parsed_meta, cpu_info, variables, is_meta_file = Tinker.parse_meta_file meta_file
 		
 		raw_hex_image = File.readlines hex_file
 		name          = File.basename hex_file, ".*"
@@ -60,7 +60,8 @@ class Tinker
 		t.variables     = variables
 		t.raw_hex_image = raw_hex_image
 		t.hex_file      = hex_file
-		t.meta_file     = meta_file if is_meta_filed
+		t.meta          = parsed_meta
+		t.meta_file     = meta_file if is_meta_file
 
 		t.cpu.mount_hex raw_hex_image
 		return t
@@ -87,6 +88,9 @@ class Tinker
 	end
 
 	def diff(other_file)
+		meta = @meta
+		meta = cpu.name if meta == {} || meta == nil
+		return Tinker.diff self, other_file, meta
 	end
 
 
@@ -176,18 +180,16 @@ class Tinker
 
 	private 
 	def Tinker.parse_meta_file(raw_meta)
-		meta_filed = false
+		is_meta_file = false
 		
 		if raw_meta.class == String
 			
-			return raw_meta, [], false if raw_meta =~ /^[a-z0-9_]*$/i     # doesn't look like a flea name, must be a cpu name
+			return {}, raw_meta, [], false if raw_meta =~ /^[a-z0-9_]*$/i     # doesn't look like a flea name, must be a cpu name
 			raise ToolException.new "Tinker: meta file ('#{raw_meta}') does not exists" unless File.exists? raw_meta
 			raw_meta = YAML.load_file(raw_meta)[:meta]
-			meta_filed = true
+			is_meta_file = true
 
-		elsif raw_meta.class == Hash
-			raw_meta = raw_meta[:meta]
-		else
+		elsif raw_meta.class != Hash
 			raise ToolException.new "meta_file can only be a string (cpu name/filename) or hash containing metadata"
 		end
 		variables = []
@@ -195,7 +197,7 @@ class Tinker
 		symbols.each_pair {  |name, raw| 
 				variables.push Variable.parse name, raw
 			} if symbols
-		return raw_meta[:cpu], variables, meta_filed
+		return raw_meta, raw_meta[:cpu], variables, is_meta_file
 	end
 
 	def write_value_object(var, val)
