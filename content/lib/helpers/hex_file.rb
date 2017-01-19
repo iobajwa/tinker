@@ -14,6 +14,12 @@ class HexFile
 	MASK_32BIT = 0xffffffff
 	END_OF_HEX_FILE_ENTRY = ":00000001FF"
 
+=begin
+	Hex format
+	:-10-0008-00-80 31 20 00 7F 08 F3 00 11 08 01 39 F2 00 21 00-37
+	:-RECLEN-OFFSET-RECTYPE-data/info-CHECKSUM
+	:- Record Length - Offset - Record Type - data/info - Checksum
+=end
 	def HexFile.parse(contents, &handler)
 		base_address = 0
 		record_counter = 0

@@ -167,9 +167,6 @@ describe Variable do
 			it "passed data-stream is empty" do
 				expect { $var.deserialize [] }.to raise_exception(ToolException, "variable.deserialize: variable instance not present in memory ('var')")
 			end
-			it "passed data-stream contains nil elements" do
-				expect { $var.deserialize [1, nil] }.to raise_exception(ToolException, "variable.deserialize: variable instance not present in memory ('var')")
-			end
 			it "passed data-stream length does not match expected size" do
 				expect { $var.deserialize [1] }.to raise_exception(ToolException, "variable.deserialize: byte-array size ('1') does not match the expected size ('2') for variable 'var'")
 			end
@@ -192,6 +189,9 @@ describe Variable do
 				$var.type = "Char"
 
 				$var.deserialize([0x34]).should be == '4'
+			end
+			it "passed data-stream contains nil elements" do
+				$var.deserialize([1, nil]).should be_nil
 			end
 		end
 		describe "and variable is array, returns correctly formed data when" do

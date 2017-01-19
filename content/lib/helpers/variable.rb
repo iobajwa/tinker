@@ -154,7 +154,10 @@ class Variable
 	def parse_value_from_raw(raw, size_expected)
 		raise ToolException.new "variable instance not present in memory ('#{@name}')" if raw.length == 0
 		raise ToolException.new "byte-array size ('#{raw.length}') does not match the expected size ('#{size_expected}') for variable '#{@name}'" unless raw.length == size_expected
-		raw.each {  |b| raise ToolException.new "variable instance not present in memory ('#{@name}')" if b == nil }
+		raw.each {  |b| 
+			next unless b == nil
+			return nil
+		}
 		i = 0
 		value = 0
 		raw.reverse! if @@little_endian
