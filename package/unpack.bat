@@ -19,14 +19,24 @@ rmdir /s /q "%base_path%\content"
 echo removing directory "%base_path%\spec"
 rmdir /s /q "%base_path%\spec"
 
-echo removing .rspec
-rmdir /s /q "%base_path%\.rspec"
+echo deleting .rspec
+del "%base_path%\.rspec"
 
-echo removing Gemfile
-rmdir /s /q "%base_path%\Gemfile"
+echo deleting "%base_path%\Gemfile"
+del "%base_path%\Gemfile"
 
-echo removing Gemfile.lock
-rmdir /s /q "%base_path%\Gemfile.lock"
+echo deleting Gemfile.lock
+del "%base_path%\Gemfile.lock"
 
 echo copying "%base_path%/lib" to "%base_path%"
 xcopy /s "%base_path%/lib" "%base_path%"
+
+echo removing directory "%base_path%/lib"
+rmdir /s /q "%base_path%/lib"
+
+	rem create the load_script
+set env_load_script="%base_path%\env.txt"
+echo creating environment script '%env_load_script%'
+echo %base_path% > %env_load_script%
+
+echo done.
