@@ -100,6 +100,7 @@ class Variable
 	end
 
 	def ==(obj)
+		return false if obj == nil
 		return ( @name          == obj.name &&
 		         @size          == obj.size &&
 		         @type          == obj.type &&
